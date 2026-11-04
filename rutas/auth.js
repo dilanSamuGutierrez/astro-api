@@ -40,21 +40,32 @@ router.post('/registro', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-  const { correo, clave } = req.body ?? {};
+  const { nombre, clave } = req.body ?? {};
 
-  if (!correo || !clave) {
+  if (
+    typeof nombre !== 'string' ||
+    !nombre.trim() ||
+    typeof clave !== 'string' ||
+    !clave
+  ) {
     return res.status(400).json({ mensaje: 'Faltan datos' });
   }
 
   const resultado = await pool.query(
-    'SELECT id, nombre, correo, clave_hash FROM usuarios WHERE correo = $1',
-    [correo.trim().toLowerCase()]
+    `SELECT id, nombre, correo, clave_hash
+     FROM usuarios
+     WHERE LOWER(nombre) = LOWER($1)`,
+    [nombre.trim()]
   );
+
   const usuario = resultado.rows[0];
-  const claveCorrecta = usuario && (await bcrypt.compare(clave, usuario.clave_hash));
+  const claveCorrecta =
+    usuario && (await bcrypt.compare(clave, usuario.clave_hash));
 
   if (!claveCorrecta) {
-    return res.status(401).json({ mensaje: 'Correo o contraseña incorrectos' });
+    return res.status(401).json({
+      mensaje: 'Nombre de usuario o contraseña incorrectos',
+    });
   }
 
   const token = jwt.sign(
@@ -63,7 +74,7 @@ router.post('/login', async (req, res) => {
     { expiresIn: '2h' }
   );
 
-  res.json({
+  return res.json({
     token,
     usuario: { id: usuario.id, nombre: usuario.nombre, correo: usuario.correo },
   });
