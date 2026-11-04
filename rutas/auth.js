@@ -5,7 +5,6 @@ import { pool } from '../db.js';
 import { verificarToken } from '../middlewares/verificarToken.js';
 
 const router = Router();
-const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 router.post('/registro', async (req, res) => {
   const { nombre, correo, clave } = req.body ?? {};
