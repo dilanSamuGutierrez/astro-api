@@ -6,7 +6,19 @@ import rutasAuth from './rutas/auth.js';
 const app = express();
 const puerto = process.env.PORT || 3000;
 
-app.use(cors({ origin: (process.env.ORIGEN_PERMITIDO || '').split(',') }));
+const origenesApp = [
+  'http://localhost:4200',
+  'http://localhost:8100',
+  'https://localhost',
+  'capacitor://localhost',
+  'ionic://localhost',
+];
+const origenesExtra = (process.env.ORIGEN_PERMITIDO || '')
+  .split(',')
+  .map((origen) => origen.trim())
+  .filter(Boolean);
+
+app.use(cors({ origin: [...origenesApp, ...origenesExtra] }));
 app.use(express.json());
 
 app.get('/api/salud', (req, res) => {
